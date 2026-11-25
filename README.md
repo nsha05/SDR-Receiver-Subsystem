@@ -4,7 +4,7 @@ During the winter semester of 2025, I led a team of three students to design, bu
 
 **Team:** Naisha Shah (Team Lead), Abhusha Ghimire, Zara Munshi
 
-![Final PCB](images/final_pcb.jpg)
+![Final PCB](images/board_hero.jpg)
 
 ## My role as Team Lead
 
@@ -12,7 +12,9 @@ The course had 10 major deadlines spread over the term (reports, technical miles
 
 [Initial Design Spec Proposal, Feb 2025](docs/DesignProposal_Team5.pdf)
 
-[Design Proposal Presentation, Feb 2025](docs/OP1_Proposal.pdf) · [Final Design Review, Apr 2025](docs/Final_Design_Review.pdf)
+[Design Proposal Presentation, Feb 2025](docs/OP1_Proposal.pdf)
+
+[Final Design Review, Apr 2025](docs/Final_Design_Review.pdf)
 
 ---
 
@@ -56,8 +58,6 @@ We replaced the hand-built mixer (a not-functional network of PMOS switches) wit
 
 ![Mixer design change: discrete transformer and MOSFET mixer replaced by a Mini-Circuits module](images/design_change_mixer.png)
 
-
-
 ## Final design
 
 After a numerous simulations and more minor tweaks, we landed on our final design for the receiver:
@@ -68,15 +68,15 @@ We created the schematic capture and PCB layout in Altium Designer and submitted
 
 ![PCB layout in Altium](images/pcb_layout.png)
 
-## Stage 6: Assembly
+## PCB Assembly
 
-We soldered the board with solder paste and an iron, then mounted it on the radio motherboard.
+We soldered the board with a soldering iron for most components, as well as soldering paste and a heat gun for the couple surface-mounted components. After some basic continuity checks to ensure everything was connected properly, we then mounted our PCB on the radio motherboard.
 
 <img src="images/board_on_motherboard.jpg" width="600" alt="RX subsystem on the radio motherboard">
 
-## Stage 7: Final testing
+## Testing procedure
 
-I characterized each stage on the finished board with an oscilloscope, waveform generator, and bench power supply, using measurement scripts for the final checks.
+We characterized each stage on the finished board with an oscilloscope, waveform generator, and power supply, using automated python scripts for the frequency sweeps.
 
 <img src="images/oscilloscope.jpg" width="500" alt="Oscilloscope during testing">
 
@@ -84,43 +84,29 @@ I characterized each stage on the finished board with an oscilloscope, waveform 
 |---|---|---|
 | ![BPF frequency response](images/test_bpf.png) | ![I/Q phase vs frequency](images/test_mixer.png) | ![LPF frequency response](images/test_lpf.png) |
 
+Ultimately, our board was mostly functional! The signal behaves generally as expected as it moves through the different components of our receiver. However, it wasn't perfect...
+
 | Component | Requirement | Measured | Error | Pass? |
 |---|---|---|---|---|
 | Enable switch | 3.3 V high | 3.3 V | 0% | ✅ |
-| Bandpass filter | 8–16 MHz | ~8–14.5 MHz | ~0% (low edge), ~9.4% (high edge) | ⚠️ |
+| Bandpass filter | 8–16 MHz | ~8–14.5 MHz | ~0% (low edge), ~9.4% (high edge) | ❌ |
 | Voltage clipper | 0.7 V | 0.7 V | ~0% | ✅ |
 | Quadrature mixer | −90° I/Q phase shift | ~−90° | ~0% | ✅ |
 | Low-pass filter | 96 kHz cutoff | ~20 kHz | ~79.2% | ❌ |
 | I/Q amplifier | >30 dB gain | >30 dB | 0% | ✅ |
 
-Every stage worked, and four of the six met spec. The other two taught me the most.
+While every stage worked for the most part, our bandpass filter and low-pass filter had some issues meeting the desired cutoff frequency. However, both of these filters had previously been shown to be working in our LTSpice simulations. However, one thing we hadn't considered during our simulations was the impact of the different modules on each other. We  had tested each part (bandpass filter, voltage clipper, low-pass filter, amplifier) separately. However, on the actual board, it's possible that the low-pass filter cascaded with an unforseen high-pass filter part of our IQ Amplifier design, and dragged the cutoff down. We hadn't caught it earlier because we'd been testing each section on its own. If this is indeed the cause of error, the fix should be to just recalculate the component values for the cascaded circuit so the cutoff moves back up to 96 kHz.
 
----
+The bandpass filter upper cutoff was also slightly off, but not by a large amount. One detail I noticed after reviewing for potential causes of error was the tolerances of our components. A few of our parts, mainly the inductors, had ±20% tolerance. It's possible this tolerance was was enough to pull the upper cutoff down due to inaccurate values. Tighter-tolerance components should fix this issue.
 
-## What went wrong and what I learned
+**Major Takeaways**
+- Test parts of neighbouring stages together to identify how they might impact each other
+- Build component tolerance into the simulation from the start, or spend a bit more of the budget on better parts
 
-**Low-pass filter cutoff (96 kHz expected, ~20 kHz measured).** This was the big one. During final testing the cutoff came in almost 80% low. I traced it to the layout: the low-pass filter sits right next to a high-pass filter, and once the two were cascaded, the loading between them dragged the cutoff down. We hadn't caught it earlier because we'd been testing each section on its own. The fix is simple: recalculate the component values for the cascaded circuit so the cutoff moves back up to 96 kHz.
+## Conclusion
 
-![Cascaded low-pass and high-pass filters](images/cascaded_filters.png)
+Looking back, this was one of the most hands-on and rewarding projects I've done so far. It was the first time I took a circuit from an idea on paper all the way to a physical board I could hold, plug into a real radio, and measure. Seeing a signal actually make it through our receiver on the oscilloscope after months of simulations and redesigns was extremely satisfying, and made me feel like all my hard work was worth it.
 
-> What I'd do differently: test stages together as soon as they connect, not just one by one.
+The part I didn't expect to learn the most from was managing the team itself. Three people with different schedules, working styles, and opinions on how the design should go meant we didn't always agree, and there were times when things got tense. Honestly, it wasn't always easy. As team lead I had to step in, hear everyone out, and steer us back toward a decision we could all commit to, even when that meant not everyone was happy with the outcome. It taught me a lot about leadership in general, and how working on a team almost never goes exactly as planned. No matter how many contingency plans you lay out in the beginning, some unexpected situation is going to pop up eventually, and knowing how to deal with it on the fly is one of the best skills to have.
 
-**Bandpass filter upper edge (~14.5 MHz instead of 16 MHz).** A few of our parts had ±20% tolerance, which was enough to pull the upper cutoff down. Tighter-tolerance components would fix it.
-
-> What I'd do differently: build component tolerance into the simulation from the start, or spend a bit more of the budget on better parts in the places where precision matters.
-
-## Repository contents
-
-```
-docs/      Proposal and final design review slides (PDF)
-images/    Schematics, simulations, PCB layout, the board, and scope captures
-```
-
-## Tools and skills
-
-Altium Designer · LTspice · breadboard prototyping · PCB layout · SMD and through-hole soldering · oscilloscope / function generator measurements · RF filter design · BJT and MOSFET switching · op-amp circuits · technical presentation
-
-## References
-
-- *Flexible Radio Transceiver (FLRTRX) Interface Control Document*, ECE 295, University of Toronto, 2025.
-- S. V. Hum, *Focused Design Labs 1 & 2: Subsystem A*, ECE 295, University of Toronto, 2025.
+Getting a working board out of all of it, the mixer struggles, the disagreements, and the late nights, made the final result feel that much more earned. I'm really grateful to my team, my TA, CI, as well as professor Sean Hum for helping put together such an engaging course 😁
