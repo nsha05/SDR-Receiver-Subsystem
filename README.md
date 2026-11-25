@@ -2,8 +2,6 @@
 
 During the winter semester of 2025, I led a team of three students to design, build, and test a **Receiver (RX) Subsystem** of a software-defined radio (SDR) for the design course ECE295.
 
-**Team:** Naisha Shah (Team Lead), Abhusha Ghimire, Zara Munshi
-
 ![Final PCB](images/final_pcb.jpg)
 
 ## My role as Team Lead
