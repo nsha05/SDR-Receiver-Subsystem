@@ -4,7 +4,7 @@ During the winter semester of 2025, I led a team of three students to design, bu
 
 **Team:** Naisha Shah (Team Lead), Abhusha Ghimire, Zara Munshi
 
-![Final PCB](images/board_hero.jpg)
+![Final PCB](images/final_pcb.jpg)
 
 ## My role as Team Lead
 
@@ -109,4 +109,4 @@ Looking back, this was one of the most hands-on and rewarding projects I've done
 
 The part I didn't expect to learn the most from was managing the team itself. Three people with different schedules, working styles, and opinions on how the design should go meant we didn't always agree, and there were times when things got tense. Honestly, it wasn't always easy. As team lead I had to step in, hear everyone out, and steer us back toward a decision we could all commit to, even when that meant not everyone was happy with the outcome. It taught me a lot about leadership in general, and how working on a team almost never goes exactly as planned. No matter how many contingency plans you lay out in the beginning, some unexpected situation is going to pop up eventually, and knowing how to deal with it on the fly is one of the best skills to have.
 
-Getting a working board out of all of it, the mixer struggles, the disagreements, and the late nights, made the final result feel that much more earned. I'm really grateful to my team, my TA, CI, as well as professor Sean Hum for helping put together such an engaging course 😁
+Getting a working board out of all of it, the mixer struggles, the disagreements, and the late nights, made the final result feel that much more earned. I'm really grateful to my team, my TA, CI, as well as professor Sean Hum for putting together such an engaging design course 😁
