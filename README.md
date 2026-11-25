@@ -1,8 +1,6 @@
 # SDR Receiver Subsystem (ECE 295)
 
-Hardware design project for **ECE295: Hardware Design and Communication** at the University of Toronto (Winter 2025).
-
-I led a team of three to design, build, and test **Subsystem A, the front end receiver** of a software-defined radio (SDR). This stage takes the signal from the antenna, filters out unwanted frequencies and noise, and prepares it for further digital processing.
+During the winter semester of 2025, I led a team of three students to design, build, and test a **Receiver (RX) Subsystem** of a software-defined radio (SDR) for the design course ECE295.
 
 **Team:** Naisha Shah (Team Lead), Abhusha Ghimire, Zara Munshi
 
@@ -12,95 +10,61 @@ I led a team of three to design, build, and test **Subsystem A, the front end re
 
 The course had 10 major deadlines spread over the term (reports, technical milestones, presentations, PCB submissions), so a lot of my job was figuring out who was doing what each week and making sure we didn't fall behind. This also included taking on extra responsibility to ensure all team members' contributions were up to standard, and reviewing everyone's work before each submission. I was also the main spokesperson who was in charge of external communications, including contact with the Teaching Assistants for technical questions and demonstrations, as well as the Communications Instructors for written submissions and presentations. 
 
-Design Proposal: 
-Slides: [Proposal presentation, Feb 2025](docs/OP1_Proposal.pdf) · [Final design review, Apr 2025](docs/Final_Design_Review.pdf)
+[Initial Design Spec Proposal, Feb 2025](docs/DesignProposal_Team5.pdf)
+
+[Design Proposal Presentation, Feb 2025](docs/OP1_Proposal.pdf) · [Final Design Review, Apr 2025](docs/Final_Design_Review.pdf)
 
 ---
 
 ## What the subsystem does
 
-The receiver takes the incoming RF signal from the RX switch, keeps only the band we care about, mixes it down to baseband as two signals 90° apart (I and Q), and amplifies them for the demodulator (Subsystem B). The local oscillator signals that drive the mixer come from Subsystem C.
+The receiver takes the incoming RF signal from the RX switch, keeps only the band we care about by taking the desired frequency, mixes it down to baseband as two signals 90° apart (In-Phase and Quadrature), and amplifies them for the demodulator (Subsystem B). From then onwards, the signal undergoes further processing through the various other subsystems. The local oscillator signals that drive the mixer come from Subsystem C.
 
 ```
 RX_SIG → Enable Switch → Bandpass Filter → Voltage Clipper → Quadrature Mixer → Low-pass Filter → I/Q Amplifier → RX_I, RX_Q
                                                                   ↑
                                                        LO_0° / LO_90° (Subsystem C)
 ```
-
-**Inputs:** RX_SIG, LO_F1_0, LO_F1_90, /TXEN, 3.3 V and 5 V power
-**Outputs:** RX_I, RX_Q (90° apart, matched within 1 dB, never above 5 V)
-
 ---
 
-## Stage 1: Planning
+## Planning
 
-Everything had to meet the course's Interface Control Document (ICD), with a tight timeline and a strict budget. That pushed me toward designs that were simple, reliable, and cheap rather than clever. Here's how the term was laid out:
+The major milestone layout of the term was as follows:
 
 | Date | Milestone |
 |---|---|
 | Jan 24 | Written Document 0 |
 | Feb 10 | Technical Milestone 0, Written Document 1 |
-| Feb 11–15 | TA check-in on our direction, planned the testing parameters for M1 |
-| Feb 24 | Technical Milestone 1, Oral Presentation 1 (design proposal) |
-| Mar 10 | Technical Milestone 2 |
-| Mar 16–17 | PCB submission, parts order |
-| Apr 1 | Technical Milestone 3 |
-| Apr 29–30 | Rehearsal pitch, final design pitch |
+| Feb 24 | Technical Milestone M1, Oral Presentation 1 (design proposal) |
+| Mar 10 | Technical Milestone M2 |
+| Mar 16 | Final PCB submission, parts order |
+| Apr 1 | Technical Milestone M3 |
+| Apr 2–29 |PCB assembly and testing|
+| Apr 30 |Final Design Review |
+---
 
-![Project timeline](images/timeline.png)
+## Initial proposed design
 
-## Stage 2: Proposed design (February)
+Everything within our design had to meet the course's Interface Control Document (ICD), with a tight timeline and a strict budget. That pushed us toward designs that were simple, reliable, and cheap rather than overcomplicated and likely to induce error. 
 
-For the first oral presentation, we proposed a full schematic and justified each block:
+![Initial Design Schematic](images/proposed_schematic.png)
 
-![Proposed subsystem schematic](images/proposed_schematic.png)
+## First major obstacle
+For every major stage of the receiver, we went with whatever was cheapest and easiest to build that still met the spec. We used a basic transistor for the enable switch instead buying a more expensive component, stopped the bandpass filter at 3 stages because more would have added cost and board space for almost no improvement, and used simple op-amp circuits for the limiter and amplifier. That's also why we decided to try and build our own quadrature mixer instead of buying an integrated circuit (IC) like most other teams. However, after many proposed quad-mixer designs all not performing as expected, we weren't sure if the extra effort was yielding worthwhile results. Ultimately it turned out to be a lot harder than we expected, and we ended up buying one anyways to make sure we didn't fall behind on our time constraints 😞💔.
 
-| Block | What we chose | Why |
-|---|---|---|
-| Transmit enable switch | PNP BJT | Keeps the receiver off while the radio is transmitting, so the TX and RX paths don't interfere. A BJT was cheaper than a MOSFET, fine for simple logic, and its lower threshold made it more reliable with a pulsed control signal. |
-| Bandpass filter | 3-stage LC filter, 8–16 MHz | I simulated N = 1 to 5 stages in LTspice. N = 3 was the best balance between sharp filtering and part count. |
-| Voltage clipper | 1N4148 diodes | Clips the signal to ±0.7 V so the stages after it are protected |
-| Quadrature mixer | Center-tapped transformer and PMOS switches | MOSFET switching is more robust and accurate than diode switching, and it avoids extra voltage drops |
-| Low-pass filter | Single-stage LC, 96 kHz cutoff | Removes everything above the baseband after mixing |
-| I/Q amplifier | LM386 | Low power, adjustable gain (20 to 200), and rail-to-rail output, so it can hit 30 dB and limit cleanly to 0–5 V |
-
-![Bandpass filter stage sweep in LTspice, N = 1 to 5](images/bpf_stage_sweep.png)
-
-Before building anything, we checked every requirement in simulation: the 8–16 MHz passband, ±0.7 V clipping, downconversion through the mixer, the 96 kHz low-pass cutoff, and 30 dB of gain (a 1 V input coming out at about 31.6 V with an ideal op amp, since 30 dB is a voltage gain of 10^(30/20) ≈ 31.6).
-
-![Mixer simulation: transformer signal, LO, and downconverted output](images/mixer_sim.png)
-
-We also flagged the risks we expected going into integration: getting every subsystem working together on one radio, tight board space, and heat during testing.
-
-## Stage 3: Breadboard prototyping
-
-We built each stage on a breadboard and checked it before committing to a layout:
-
-| Stage | Works? | Meets spec? |
-|---|---|---|
-| Bandpass filter | ✅ | Partly |
-| Voltage clipper | ✅ | ✅ |
-| Low-pass filter | ✅ | ❌ |
-| I/Q amplifier | ✅ | ✅ |
-
-<img src="images/breadboard_iq_amp.jpg" width="350" alt="I/Q amplifier on the breadboard">
-
-## Stage 4: Design changes
-
-Prototyping changed a few of the proposal's choices before anything went on a board:
-
-- **Quadrature mixer:** we replaced the hand-built mixer (a center-tapped transformer driving PMOS switches) with off-the-shelf Mini-Circuits mixer modules (ADE-1+). That gave us a characterized, repeatable part instead of a circuit that was sensitive to how it was built.
-- **I/Q amplifier:** we moved from the LM386 to an LM741-based op-amp stage
+We replaced the hand-built mixer (a not-functional network of PMOS switches) with a cheap yet reliable off-the-shelf mixer IC (ADE-1+)
 
 ![Mixer design change: discrete transformer and MOSFET mixer replaced by a Mini-Circuits module](images/design_change_mixer.png)
 
-Here's the final schematic, with each stage marked:
+
+
+## Final design
+
+After a numerous simulations and more minor tweaks, we landed on our final design for the receiver:
 
 ![Final schematic](images/final_schematic.png)
 
-## Stage 5: PCB design
-
-I did the schematic capture and board layout in Altium Designer and submitted the board for fabrication in mid-March.
+We created the schematic capture and PCB layout in Altium Designer and submitted the board for fabrication in mid-March.
 
 ![PCB layout in Altium](images/pcb_layout.png)
 
