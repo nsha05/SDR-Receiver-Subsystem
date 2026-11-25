@@ -45,36 +45,41 @@ The major milestone layout of the term was as follows:
 
 ## Initial proposed design
 
-Everything within our design had to meet the course's Interface Control Document (ICD), with a tight timeline and a strict budget. That pushed us toward designs that were simple, reliable, and cheap rather than overcomplicated and likely to induce error. 
+Everything within our design had to meet the course's Interface Control Document (ICD), with a tight timeline and a strict budget. That pushed us toward designs that were simple, reliable, and cheap, rather than too overcomplicated and likely to induce error. 
 
 ![Initial Design Schematic](images/proposed_schematic.png)
 
 ## First major obstacle
-For every major stage of the receiver, we went with whatever was cheapest and easiest to build that still met the spec. We used a basic transistor for the enable switch instead buying a more expensive component, stopped the bandpass filter at 3 stages because more would have added cost and board space for almost no improvement, and used simple op-amp circuits for the limiter and amplifier. That's also why we decided to try and build our own quadrature mixer instead of buying an integrated circuit (IC) like most other teams. However, after many proposed quad-mixer designs all not performing as expected, we weren't sure if the extra effort was yielding worthwhile results. Ultimately it turned out to be a lot harder than we expected, and we ended up buying one anyways to make sure we didn't fall behind on our time constraints 😞💔.
 
-We replaced the hand-built mixer (a not-functional network of PMOS switches) with a cheap yet reliable off-the-shelf mixer IC (ADE-1+)
+For every major stage of the receiver, we went with whatever was cheapest and easiest to build that still met the specifications. We decided to create a 3 stage bandpass filter because more stages would have added to both cost and board space, with little performance improvement. We also used simple diode and op-amp circuits for the limiter and amplifier. 
+
+That's also why I decided to try and build my own quadrature mixer instead of buying an integrated circuit (IC) like most other teams. However, after many proposed quad-mixer designs all not performing as expected, I wasn't sure if the extra effort was yielding worthwhile results. Ultimately it turned out to be a lot harder than I expected, and I ended up buying one anyways to make sure we didn't fall behind on our time constraints :(
+
+I replaced my non-functional DIY mixer with a cheap but reliable quadrature mixer IC (ADE-1+)
 
 ![Mixer design change: discrete transformer and MOSFET mixer replaced by a Mini-Circuits module](images/design_change_mixer.png)
 
 ## Final design
 
-After a numerous simulations and more minor tweaks, we landed on our final design for the receiver:
+After a numerous simulations and more minor tweaks, we had our final design:
 
 ![Final schematic](images/final_schematic.png)
 
-We created the schematic capture and PCB layout in Altium Designer and submitted the board for fabrication in mid-March.
+I created the schematic and PCB layout in Altium Designer and submitted the board for fabrication in mid-March. This ensured that we stayed on track with our original timeline, so my team would have enough time to assemble and debug the board before our final demonstration and design review.
 
 ![PCB layout in Altium](images/pcb_layout.png)
 
 ## PCB Assembly
 
-We soldered the board with a soldering iron for most components, as well as soldering paste and a heat gun for the couple surface-mounted components. After some basic continuity checks to ensure everything was connected properly, we then mounted our PCB on the radio motherboard.
+We assembled the board in the Myhal Centre Fabrication Facility (MYFab), using a soldering iron for most components, as well as soldering paste and a heat gun for the few surface-mounted components. After some basic continuity checks to ensure everything was connected properly, we then mounted our PCB on the radio motherboard.
 
 <img src="images/board_on_motherboard.jpg" width="600" alt="RX subsystem on the radio motherboard">
 
 ## Testing procedure
 
-We characterized each stage on the finished board with an oscilloscope, waveform generator, and power supply, using automated python scripts for the frequency sweeps.
+We characterized each stage on the finished board with an oscilloscope, waveform generator, and power supply.
+
+I also automated python scripts to sweep across frequencies to create the bode plots for our final ICD checks.
 
 <img src="images/oscilloscope.jpg" width="500" alt="Oscilloscope during testing">
 
@@ -82,7 +87,7 @@ We characterized each stage on the finished board with an oscilloscope, waveform
 |---|---|---|
 | ![BPF frequency response](images/test_bpf.png) | ![I/Q phase vs frequency](images/test_mixer.png) | ![LPF frequency response](images/test_lpf.png) |
 
-Ultimately, our board was mostly functional! The signal behaves generally as expected as it moves through the different components of our receiver. However, it wasn't perfect...
+Ultimately, our board was mostly functional! The signal behaved generally as expected as it moves through the different components of our receiver. However, it wasn't perfect:
 
 | Component | Requirement | Measured | Error | Pass? |
 |---|---|---|---|---|
@@ -93,9 +98,11 @@ Ultimately, our board was mostly functional! The signal behaves generally as exp
 | Low-pass filter | 96 kHz cutoff | ~20 kHz | ~79.2% | ❌ |
 | I/Q amplifier | >30 dB gain | >30 dB | 0% | ✅ |
 
-While every stage worked for the most part, our bandpass filter and low-pass filter had some issues meeting the desired cutoff frequency. However, both of these filters had previously been shown to be working in our LTSpice simulations. However, one thing we hadn't considered during our simulations was the impact of the different modules on each other. We  had tested each part (bandpass filter, voltage clipper, low-pass filter, amplifier) separately. However, on the actual board, it's possible that the low-pass filter cascaded with an unforseen high-pass filter part of our IQ Amplifier design, and dragged the cutoff down. We hadn't caught it earlier because we'd been testing each section on its own. If this is indeed the cause of error, the fix should be to just recalculate the component values for the cascaded circuit so the cutoff moves back up to 96 kHz.
+While every stage worked for the most part, our bandpass filter and low-pass filter had some issues meeting the desired cutoff frequency. However, both of these filters had previously been shown to be working in our LTSpice simulations. After spending so much time on the board, it was really important for me to understand why the final measurements weren't matching my simulations.
 
-The bandpass filter upper cutoff was also slightly off, but not by a large amount. One detail I noticed after reviewing for potential causes of error was the tolerances of our components. A few of our parts, mainly the inductors, had ±20% tolerance. It's possible this tolerance was was enough to pull the upper cutoff down due to inaccurate values. Tighter-tolerance components should be able fix this issue.
+One thing I hadn't considered during my simulations was the impact of the different modules on each other. I had tested each part of the receiver (bandpass filter, voltage clipper, low-pass filter, amplifier) separately. However, on the actual board, it's possible that the low-pass filter cascaded with the high-pass filter part of our IQ Amplifier design, and dragged the cutoff down. I  hadn't caught it earlier because we'd been testing each section on its own. The fix is the just recalculate the component values for the cascaded circuit so the cutoff moves back up to 96 kHz.
+
+The bandpass filter upper cutoff was also slightly off, but not by a large amount. One detail I noticed after reviewing for potential causes of error was the tolerances of our components. A few of our parts, mainly the inductors, had ±20% tolerance. It's possible this tolerance was was enough to pull the upper cutoff down due to inaccurate values. Lower tolerance components should be able to fix this issue.
 
 **Major Takeaways**
 - Test parts of neighbouring stages together to identify how they might impact each other
@@ -103,8 +110,8 @@ The bandpass filter upper cutoff was also slightly off, but not by a large amoun
 
 ## Conclusion
 
-Looking back, this was one of the most hands-on and rewarding projects I've done so far. It was the first time I took a circuit from an idea on paper all the way to a physical board I could hold, plug into a real radio, and measure. Seeing a signal actually make it through our receiver on the oscilloscope after months of simulations and redesigns was extremely satisfying, and made me feel like all my hard work was worth it.
+Looking back, this was one of the most hands-on and rewarding projects I've done so far. It was the first time I took an idea from my brain to a physical board I could actually build and measure. Seeing the signal actually make it through our receiver and meet almost all the ICD requirements really made me feel like my efforts were worth it (even if it wasn't perfect)
 
-The part I didn't expect to learn the most from was managing the team itself. Three people with different schedules, working styles, and opinions on how the design should go meant we didn't always agree, and there were times when things got tense. Honestly, it wasn't always easy. As team lead I had to step in, hear everyone out, and steer us back toward a decision we could all commit to, even when that meant not everyone was happy with the outcome. It taught me a lot about leadership in general, and how working on a team almost never goes exactly as planned. No matter how many contingency plans you lay out in the beginning, some unexpected situation is going to pop up eventually, and knowing how to deal with it on the fly is one of the best skills to have.
+The part I unexpectedly learned from the most was managing the team itself. Three people with different schedules, opinions, and work ethics meant we didn't always agree on the same thing. As team lead I constantly had to step in and make a decision, even when that meant not everyone was happy with the outcome. It taught me a lot about leadership in general, and how working on a team almost never goes exactly as planned. No matter how many contingency plans you lay out in the beginning, some unexpected situation is going to pop up eventually, and knowing how to deal with it on the fly is a really important skill to have.
 
-Getting a working board out of all of it, the mixer struggles, the disagreements, and the late nights, made the final result feel that much more earned. I'm really grateful to my team, my TA, CI, as well as professor Sean Hum for putting together such an engaging design course 😁
+Overall, working on this project was an amazing experience, and I learned a lot. I'm really grateful to my team, my TA, CI, as well as professor Sean Hum for putting together such an engaging design course :)
