@@ -1,24 +1,19 @@
 # SDR Receiver Subsystem (ECE 295)
 
-Hardware design project for **ECE 295: Hardware Design and Communication** at the University of Toronto (Winter 2025).
+Hardware design project for **ECE295: Hardware Design and Communication** at the University of Toronto (Winter 2025).
 
-I led a team of three to design, build, and test **Subsystem A, the receive (RX) front end** of a software-defined radio (SDR). This stage takes the signal from the antenna, filters out unwanted frequencies and noise, and prepares it for digital processing. We took it all the way from a proposal in February to a soldered PCB that we tested on the lab bench in April.
+I led a team of three to design, build, and test **Subsystem A, the front end receiver** of a software-defined radio (SDR). This stage takes the signal from the antenna, filters out unwanted frequencies and noise, and prepares it for further digital processing.
 
-**Team:** Naisha Shah (team lead), Abhusha Ghimire, Zara Munshi
+**Team:** Naisha Shah (Team Lead), Abhusha Ghimire, Zara Munshi
 
 ![Final PCB](images/final_pcb.jpg)
 
-## My role
+## My role as Team Lead
 
-I was the team lead, and I owned the three parts of the project that most of the rest depended on:
+The course had 10 major deadlines spread over the term (reports, technical milestones, presentations, PCB submissions), so a lot of my job was figuring out who was doing what each week and making sure we didn't fall behind. This also included taking on extra responsibility to ensure all team members' contributions were up to standard, and reviewing everyone's work before each submission. I was also the main spokesperson who was in charge of external communications, including contact with the Teaching Assistants for technical questions and demonstrations, as well as the Communications Instructors for written submissions and presentations. 
 
-- **Circuit design:** I picked the topology for each stage of the RX chain and made the calls on the trade-offs, all against the course's spec, timeline, and budget
-- **PCB layout:** I did the schematic capture and board layout in Altium Designer and got the board ready for fabrication
-- **Final testing:** I planned and ran the final characterization on the assembled board, then traced the low-pass filter problem back to its cause (more on that below)
-
-I also kept us on track through the course's 10 milestones, from the first written document in January to the final design pitch at the end of April.
-
-📄 Slides: [Proposal presentation, Feb 2025](docs/OP1_Proposal.pdf) · [Final design review, Apr 2025](docs/Final_Design_Review.pdf)
+Design Proposal: 
+Slides: [Proposal presentation, Feb 2025](docs/OP1_Proposal.pdf) · [Final design review, Apr 2025](docs/Final_Design_Review.pdf)
 
 ---
 
